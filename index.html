@@ -1,0 +1,147 @@
+!DOCTYPE html 
+
+html 
+
+  script src=httpsaframe.ioreleases1.3.0aframe.min.jsscript 
+
+  script src=httpsraw.githack.comAR-js-orgAR.jsmasteraframebuildaframe-ar.jsscript 
+
+  
+
+  script 
+
+    AFRAME.registerComponent('cube-mode', { 
+
+      tick function () { 
+
+         1. Alle Marker einsammeln 
+
+        var allMarkers = document.querySelectorAll('.cubemarker'); 
+
+        var visibleCount = 0; 
+
+        var winnerFound = false; 
+
+  
+
+         2. Durch alle Marker gehen 
+
+        for (var i = 0; i  allMarkers.length; i++) { 
+
+          var marker = allMarkers[i]; 
+
+          var model = marker.querySelector('a-entity');  Das Modell im Marker 
+
+  
+
+           Wenn der Marker vom System erkannt wird (object3D.visible ist true) 
+
+          if (marker.object3D.visible) { 
+
+            if (!winnerFound) { 
+
+               Der erste sichtbare Marker gewinnt! Sein Modell darf bleiben. 
+
+              model.setAttribute('visible', 'true'); 
+
+              winnerFound = true;  
+
+            } else { 
+
+               Alle anderen sichtbaren Marker müssen ihr Modell verstecken. 
+
+              model.setAttribute('visible', 'false'); 
+
+            } 
+
+          } else { 
+
+              Wenn Marker eh nicht getrackt wird, sicherheitshalber Modell anlassen 
+
+              (damit es sofort da ist, wenn er wieder auftaucht) 
+
+             model.setAttribute('visible', 'true'); 
+
+          } 
+
+        } 
+
+      } 
+
+    }); 
+
+  script 
+
+   
+
+    
+
+  body style=margin  0px; overflow hidden; 
+
+    a-scene embedded arjs=sourceType webcam; debugUIEnabled false; detectionMode mono_and_matrix; matrixCodeType 3x3;cube-mode 
+
+  
+
+      a-assets 
+
+          a-asset-item id=my-model src=.model.glba-asset-item 
+
+      a-assets 
+
+  
+
+      a-marker class=cubemarker type=barcode value=0 smooth=true smoothCount=10 smoothTolerance=0.01 smoothThreshold=5 
+
+        a-entity gltf-model=#my-model scale=1 1 1 position=0 -0.8 0 rotation=0 0 0a-entity 
+
+      a-marker 
+
+  
+
+      a-marker class=cubemarker type=barcode value=1 smooth=true smoothCount=10 smoothTolerance=0.01 smoothThreshold=5 
+
+        a-entity gltf-model=#my-model scale=1 1 1 position=0 -0.8 0 rotation=0 -90 90a-entity 
+
+      a-marker 
+
+  
+
+      a-marker class=cubemarker type=barcode value=2 smooth=true smoothCount=10 smoothTolerance=0.01 smoothThreshold=5 
+
+        a-entity gltf-model=#my-model scale=1 1 1 position=0 -0.8 0 rotation=0 0 180a-entity 
+
+      a-marker 
+
+  
+
+      a-marker class=cubemarker type=barcode value=3 smooth=true smoothCount=10 smoothTolerance=0.01 smoothThreshold=5 
+
+        a-entity gltf-model=#my-model scale=1 1 1 position=0 -0.8 0 rotation=0 0 -90a-entity 
+
+      a-marker 
+
+  
+
+      a-marker class=cubemarker type=barcode value=4 smooth=true smoothCount=10 smoothTolerance=0.01 smoothThreshold=5 
+
+        a-entity gltf-model=#my-model scale=1 1 1 position=0 -0.8 0 rotation=90 0 0a-entity 
+
+      a-marker 
+
+       
+
+      a-marker class=cubemarker type=barcode value=5 smooth=true smoothCount=10 smoothTolerance=0.01 smoothThreshold=5 
+
+        a-entity gltf-model=#my-model scale=1 1 1 position=0 -0.8 0 rotation=-90 0 0a-entity 
+
+      a-marker 
+
+  
+
+      a-entity cameraa-entity 
+
+    a-scene 
+
+  body 
+
+html 
