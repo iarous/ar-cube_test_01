@@ -6,45 +6,38 @@
   <title>AR Viewer</title>
 
   <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-  <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-nft.js"></script>
+  <!-- Marker-Version von AR.js (nicht NFT) -->
+  <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/aframe-extras@6.1.1/dist/aframe-extras.min.js"></script>
 
   <style>
-    /* ── Reset: kritisch für korrekte Kamera-Darstellung ── */
+    /*
+      KRITISCH: Kein background auf body/html!
+      AR.js platziert das Video-Element absolut als Hintergrund.
+      Der WebGL-Canvas liegt transparent darüber (alpha: true).
+      Jede Hintergrundfarbe auf body blockiert den Video-Feed → schwarzer Screen.
+    */
     * {
       margin: 0;
       padding: 0;
-      box-sizing: border-box;
+      overflow: hidden;
     }
 
     html, body {
       width: 100%;
       height: 100%;
-      overflow: hidden;
-      background: #000;
+      /* KEIN background: #000 hier! */
     }
 
     /*
-      Das ist die Hauptursache für Zoom/Verzerrung:
-      A-Frame setzt das Canvas ohne embedded-Attribut falsch.
-      Zusätzlich muss das Video-Element korrekt skaliert sein.
+      Video-Element NICHT mit CSS überschreiben.
+      AR.js positioniert es selbst korrekt.
+      Eigene z-index/position Regeln zerstören das Layout.
     */
-    .a-canvas {
-      position: fixed !important;
-      top: 0 !important;
-      left: 0 !important;
-      width: 100% !important;
-      height: 100% !important;
-    }
 
-    /* AR.js Video-Feed: kein object-fit, damit keine künstliche Vergrößerung */
-    video {
-      position: fixed !important;
-      top: 0 !important;
-      left: 0 !important;
-      width: 100% !important;
-      height: 100% !important;
-      z-index: -1 !important;
+    /* Canvas transparent halten */
+    canvas {
+      background: transparent !important;
     }
 
     /* ── UI Overlay ── */
@@ -58,8 +51,8 @@
       gap: 10px;
       justify-content: center;
       align-items: flex-end;
-      padding: 16px 16px 28px;
-      background: linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 100%);
+      padding: 16px 16px 32px;
+      background: linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 100%);
       pointer-events: none;
     }
 
@@ -68,50 +61,49 @@
       flex: 1;
       max-width: 110px;
       min-height: 48px;
-      padding: 10px 6px;
+      padding: 10px 8px;
       border-radius: 14px;
-      border: 1.5px solid rgba(255,255,255,0.25);
-      background: rgba(20, 20, 20, 0.55);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+      border: 1.5px solid rgba(255,255,255,0.3);
+      background: rgba(15, 15, 15, 0.6);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
       color: #fff;
       font-size: 13px;
       font-weight: 600;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      letter-spacing: 0.01em;
       cursor: pointer;
-      transition: background 0.18s ease, border-color 0.18s ease, transform 0.12s ease;
+      transition: background 0.18s, border-color 0.18s, transform 0.1s;
       -webkit-tap-highlight-color: transparent;
       user-select: none;
     }
 
     .model-btn.active {
-      background: rgba(255,255,255,0.22);
-      border-color: rgba(255,255,255,0.65);
+      background: rgba(255,255,255,0.25);
+      border-color: rgba(255,255,255,0.7);
     }
 
     .model-btn:active {
-      transform: scale(0.94);
+      transform: scale(0.93);
     }
 
-    /* Marker-Hinweis oben */
     #hint {
       position: fixed;
-      top: 16px;
+      top: 18px;
       left: 50%;
       transform: translateX(-50%);
       z-index: 9999;
-      background: rgba(0,0,0,0.5);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
+      background: rgba(0,0,0,0.45);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
       color: #fff;
       font-size: 12px;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      padding: 6px 14px;
+      padding: 6px 16px;
       border-radius: 20px;
       border: 1px solid rgba(255,255,255,0.15);
       pointer-events: none;
       white-space: nowrap;
+      transition: opacity 0.4s;
     }
   </style>
 </head>
@@ -120,13 +112,13 @@
   <div id="hint">📷 Hiro-Marker scannen</div>
 
   <!--
-    WICHTIG: Das "embedded"-Attribut ist zwingend erforderlich!
-    Ohne "embedded" rendert A-Frame das Canvas außerhalb des normalen
-    Document-Flows → Kamera erscheint gezoomt/verzerrt.
+    embedded     → A-Frame Canvas in normalen DOM-Flow einbetten (verhindert Zoom/Verzerrung)
+    alpha: true  → WebGL-Canvas transparent halten (Video scheint durch)
+    Kein detectionMode override → Standard Hiro-Marker Erkennung
   -->
   <a-scene
     embedded
-    arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;"
+    arjs="sourceType: webcam; debugUIEnabled: false;"
     vr-mode-ui="enabled: false"
     renderer="logarithmicDepthBuffer: true; precision: medium; antialias: true; alpha: true;"
     loading-screen="enabled: false"
@@ -147,43 +139,33 @@
 
   </a-scene>
 
-  <!-- UI Buttons -->
   <div id="ui-overlay">
-    <button class="model-btn active" id="btn-1" onclick="switchModel('./model_01.glb', 'btn-1')">Modell 1</button>
-    <button class="model-btn"        id="btn-2" onclick="switchModel('./model_02.glb', 'btn-2')">Modell 2</button>
-    <button class="model-btn"        id="btn-3" onclick="switchModel('./model_03.glb', 'btn-3')">Modell 3</button>
+    <button class="model-btn active" id="btn-1" onclick="switchModel('./model_01.glb','btn-1')">Modell 1</button>
+    <button class="model-btn"        id="btn-2" onclick="switchModel('./model_02.glb','btn-2')">Modell 2</button>
+    <button class="model-btn"        id="btn-3" onclick="switchModel('./model_03.glb','btn-3')">Modell 3</button>
   </div>
 
   <script>
-    // Aktives Modell wechseln – Dateiname bleibt immer model_01/02/03.glb
     function switchModel(path, activeBtnId) {
       var model = document.getElementById('ar-model');
       if (model) {
         model.setAttribute('gltf-model', path);
-        // Animation-Mixer neu starten nach Modellwechsel
         model.removeAttribute('animation-mixer');
         setTimeout(function() {
           model.setAttribute('animation-mixer', 'loop: repeat; clampWhenFinished: false;');
         }, 300);
       }
-      document.querySelectorAll('.model-btn').forEach(function(btn) {
-        btn.classList.remove('active');
-      });
+      document.querySelectorAll('.model-btn').forEach(function(b) { b.classList.remove('active'); });
       document.getElementById(activeBtnId).classList.add('active');
     }
 
-    // Marker-Hinweis ausblenden sobald Marker erkannt wird
+    // Marker-Hinweis ein-/ausblenden
     document.addEventListener('DOMContentLoaded', function() {
       var marker = document.getElementById('marker');
-      var hint = document.getElementById('hint');
+      var hint   = document.getElementById('hint');
       if (marker && hint) {
-        marker.addEventListener('markerFound', function() {
-          hint.style.opacity = '0';
-          hint.style.transition = 'opacity 0.4s';
-        });
-        marker.addEventListener('markerLost', function() {
-          hint.style.opacity = '1';
-        });
+        marker.addEventListener('markerFound', function() { hint.style.opacity = '0'; });
+        marker.addEventListener('markerLost',  function() { hint.style.opacity = '1'; });
       }
     });
   </script>
