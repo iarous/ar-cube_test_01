@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>AR Viewer</title>
 
+  <!-- NUR diese zwei Scripts – kein aframe-extras! -->
   <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.5/aframe/build/aframe-ar.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/aframe-extras@7.0.0/dist/aframe-extras.min.js"></script>
 
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -50,7 +50,6 @@
 
     .model-btn:active { transform: scale(0.93); }
 
-    /* Debug-Info oben links */
     #debug-info {
       position: fixed;
       top: 12px;
@@ -68,7 +67,6 @@
 </head>
 <body>
 
-  <!-- Debug-Anzeige: zeigt ob Marker erkannt wird -->
   <div id="debug-info">🔍 Marker suchen...</div>
 
   <a-scene
@@ -78,7 +76,6 @@
     vr-mode-ui="enabled: false"
     loading-screen="enabled: false"
   >
-
     <a-marker
       preset="hiro"
       id="hiro-marker"
@@ -87,29 +84,23 @@
       smoothTolerance="0.01"
       smoothThreshold="2"
     >
-
-      <!-- ✅ TEST-CUBE: Immer sichtbar wenn Marker erkannt wird.
-           Zeigt ob Marker-Tracking funktioniert, unabhängig vom GLB.
-           Wenn dieser Würfel erscheint aber kein Modell → GLB-Problem.
-           Wenn nichts erscheint → Marker-Problem. -->
+      <!-- Test-Würfel: Zeigt ob Marker erkannt wird -->
       <a-box
-        position="0 0.1 0"
-        scale="0.3 0.3 0.3"
+        position="0 0.15 0"
+        scale="0.2 0.2 0.2"
         color="#00aaff"
-        opacity="0.5"
+        opacity="0.4"
         material="transparent: true;"
       ></a-box>
 
-      <!-- 3D-Modell (über dem Test-Cube) -->
+      <!-- 3D Modell -->
       <a-entity
         id="ar-model"
         gltf-model="url(./model_01.glb)"
         scale="0.5 0.5 0.5"
         position="0 0 0"
         rotation="0 0 0"
-        animation-mixer="loop: repeat; clampWhenFinished: false;"
       ></a-entity>
-
     </a-marker>
 
     <a-entity camera></a-entity>
@@ -125,13 +116,13 @@
   </div>
 
   <script>
-    // Debug: Marker-Erkennung anzeigen
+    // Marker-Status anzeigen
     var marker = document.getElementById('hiro-marker');
     var debugEl = document.getElementById('debug-info');
 
     marker.addEventListener('markerFound', function() {
       debugEl.textContent = '✅ Marker erkannt!';
-      debugEl.style.background = 'rgba(0,150,0,0.7)';
+      debugEl.style.background = 'rgba(0,140,0,0.7)';
     });
 
     marker.addEventListener('markerLost', function() {
@@ -144,12 +135,10 @@
       var entity = document.getElementById('ar-model');
 
       entity.removeAttribute('gltf-model');
-      entity.removeAttribute('animation-mixer');
 
       setTimeout(function() {
         entity.setAttribute('gltf-model', 'url(' + path + ')');
-        entity.setAttribute('animation-mixer', 'loop: repeat; clampWhenFinished: false;');
-      }, 200);
+      }, 150);
 
       document.querySelectorAll('.model-btn').forEach(function(btn) {
         btn.classList.remove('active');
