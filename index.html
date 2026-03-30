@@ -2,172 +2,110 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>AR Viewer</title>
 
-  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-  <!-- Marker-Version von AR.js (nicht NFT) -->
+  <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
   <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/aframe-extras@6.1.1/dist/aframe-extras.min.js"></script>
 
   <style>
-    /*
-      KRITISCH: Kein background auf body/html!
-      AR.js platziert das Video-Element absolut als Hintergrund.
-      Der WebGL-Canvas liegt transparent darüber (alpha: true).
-      Jede Hintergrundfarbe auf body blockiert den Video-Feed → schwarzer Screen.
-    */
-    * {
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
     html, body {
       width: 100%;
       height: 100%;
-      /* KEIN background: #000 hier! */
+      overflow: hidden;
     }
 
-    /*
-      Video-Element NICHT mit CSS überschreiben.
-      AR.js positioniert es selbst korrekt.
-      Eigene z-index/position Regeln zerstören das Layout.
-    */
-
-    /* Canvas transparent halten */
-    canvas {
-      background: transparent !important;
-    }
-
-    /* ── UI Overlay ── */
-    #ui-overlay {
+    .ui-overlay {
       position: fixed;
       bottom: 0;
       left: 0;
       right: 0;
       z-index: 9999;
       display: flex;
-      gap: 10px;
+      gap: 12px;
+      padding: 20px 16px;
       justify-content: center;
-      align-items: flex-end;
-      padding: 16px 16px 32px;
-      background: linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 100%);
-      pointer-events: none;
+      background: linear-gradient(transparent, rgba(0, 0, 0, 0.55));
     }
 
     .model-btn {
-      pointer-events: all;
-      flex: 1;
-      max-width: 110px;
-      min-height: 48px;
-      padding: 10px 8px;
-      border-radius: 14px;
-      border: 1.5px solid rgba(255,255,255,0.3);
-      background: rgba(15, 15, 15, 0.6);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
+      padding: 12px 22px;
+      border: 2px solid rgba(255, 255, 255, 0.55);
+      border-radius: 999px;
+      background: rgba(0, 0, 0, 0.35);
       color: #fff;
-      font-size: 13px;
-      font-weight: 600;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 14px;
+      font-family: system-ui, sans-serif;
+      font-weight: 500;
       cursor: pointer;
-      transition: background 0.18s, border-color 0.18s, transform 0.1s;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      transition: background 0.18s, border-color 0.18s, color 0.18s, transform 0.1s;
       -webkit-tap-highlight-color: transparent;
-      user-select: none;
     }
 
     .model-btn.active {
-      background: rgba(255,255,255,0.25);
-      border-color: rgba(255,255,255,0.7);
+      background: rgba(255, 255, 255, 0.92);
+      color: #111;
+      border-color: #fff;
     }
 
     .model-btn:active {
       transform: scale(0.93);
     }
-
-    #hint {
-      position: fixed;
-      top: 18px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 9999;
-      background: rgba(0,0,0,0.45);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      color: #fff;
-      font-size: 12px;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      padding: 6px 16px;
-      border-radius: 20px;
-      border: 1px solid rgba(255,255,255,0.15);
-      pointer-events: none;
-      white-space: nowrap;
-      transition: opacity 0.4s;
-    }
   </style>
 </head>
 <body>
 
-  <div id="hint">📷 Hiro-Marker scannen</div>
-
-  <!--
-    embedded     → A-Frame Canvas in normalen DOM-Flow einbetten (verhindert Zoom/Verzerrung)
-    alpha: true  → WebGL-Canvas transparent halten (Video scheint durch)
-    Kein detectionMode override → Standard Hiro-Marker Erkennung
-  -->
   <a-scene
     embedded
     arjs="sourceType: webcam; debugUIEnabled: false;"
+    renderer="antialias: true; alpha: true;"
     vr-mode-ui="enabled: false"
-    renderer="logarithmicDepthBuffer: true; precision: medium; antialias: true; alpha: true;"
     loading-screen="enabled: false"
   >
-
-    <a-marker preset="hiro" id="marker" smooth="true" smoothCount="5" smoothTolerance="0.01">
+    <a-marker preset="hiro">
       <a-entity
         id="ar-model"
         gltf-model="./model_01.glb"
         scale="0.5 0.5 0.5"
         position="0 0 0"
         rotation="0 0 0"
-        animation-mixer="loop: repeat; clampWhenFinished: false;"
+        animation-mixer="loop: repeat"
       ></a-entity>
     </a-marker>
 
     <a-entity camera></a-entity>
-
   </a-scene>
 
-  <div id="ui-overlay">
-    <button class="model-btn active" id="btn-1" onclick="switchModel('./model_01.glb','btn-1')">Modell 1</button>
-    <button class="model-btn"        id="btn-2" onclick="switchModel('./model_02.glb','btn-2')">Modell 2</button>
-    <button class="model-btn"        id="btn-3" onclick="switchModel('./model_03.glb','btn-3')">Modell 3</button>
+  <div class="ui-overlay">
+    <button class="model-btn active" id="btn-01"
+      onclick="switchModel('./model_01.glb', 'btn-01')">Modell 1</button>
+    <button class="model-btn" id="btn-02"
+      onclick="switchModel('./model_02.glb', 'btn-02')">Modell 2</button>
+    <button class="model-btn" id="btn-03"
+      onclick="switchModel('./model_03.glb', 'btn-03')">Modell 3</button>
   </div>
 
   <script>
-    function switchModel(path, activeBtnId) {
-      var model = document.getElementById('ar-model');
-      if (model) {
-        model.setAttribute('gltf-model', path);
-        model.removeAttribute('animation-mixer');
-        setTimeout(function() {
-          model.setAttribute('animation-mixer', 'loop: repeat; clampWhenFinished: false;');
-        }, 300);
-      }
-      document.querySelectorAll('.model-btn').forEach(function(b) { b.classList.remove('active'); });
-      document.getElementById(activeBtnId).classList.add('active');
-    }
+    function switchModel(path, btnId) {
+      var entity = document.getElementById('ar-model');
 
-    // Marker-Hinweis ein-/ausblenden
-    document.addEventListener('DOMContentLoaded', function() {
-      var marker = document.getElementById('marker');
-      var hint   = document.getElementById('hint');
-      if (marker && hint) {
-        marker.addEventListener('markerFound', function() { hint.style.opacity = '0'; });
-        marker.addEventListener('markerLost',  function() { hint.style.opacity = '1'; });
-      }
-    });
+      entity.removeAttribute('gltf-model');
+      entity.removeAttribute('animation-mixer');
+
+      setTimeout(function () {
+        entity.setAttribute('gltf-model', path);
+        entity.setAttribute('animation-mixer', 'loop: repeat');
+      }, 150);
+
+      document.querySelectorAll('.model-btn').forEach(function (btn) {
+        btn.classList.remove('active');
+      });
+      document.getElementById(btnId).classList.add('active');
+    }
   </script>
 
 </body>
