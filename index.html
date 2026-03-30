@@ -136,26 +136,6 @@
           });
         }
       });
-
-      // Kamera-Fix für verzerrte Modelle auf mobilen Geräten
-      AFRAME.registerComponent('ar-camera-fix', {
-        init: function () {
-          var scene = this.el.sceneEl;
-          var fix = function () {
-            var cam = scene.camera;
-            if (!cam) return;
-            cam.aspect = window.innerWidth / window.innerHeight;
-            cam.updateProjectionMatrix();
-          };
-          scene.addEventListener('renderstart', function () {
-            setTimeout(fix, 300);
-          });
-          window.addEventListener('resize', fix);
-          window.addEventListener('orientationchange', function () {
-            setTimeout(fix, 400);
-          });
-        }
-      });
     </script>
   </head>
 
@@ -170,12 +150,15 @@
     <!-- Anpassungen für A-Frame 1.7.x: colorManagement ist Standard -->
     <a-scene
       embedded
-      arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;"
+      arjs="sourceType: webcam;
+            debugUIEnabled: false;
+            detectionMode: mono_and_matrix;
+            matrixCodeType: 3x3;"
       cube-mode
       vr-mode-ui="enabled: false"
-      renderer="logarithmicDepthBuffer: true; colorManagement: true;"
+      renderer="logarithmicDepthBuffer: true;"
       loading-screen="enabled: false">
-
+      
       <!-- Marker 0 · Vorderseite -->
       <a-marker class="cubemarker" type="barcode" value="0" smooth="true" smoothCount="10" smoothTolerance="0.01" smoothThreshold="5">
         <a-entity class="cube-entity" gltf-model="./model_01.glb" scale="1 1 1" position="0 -0.8 0" rotation="0 0 0" animation-mixer flat-material></a-entity>
@@ -207,7 +190,7 @@
       </a-marker>
 
       <!-- Kamera mit dem Fix-Component -->
-      <a-entity camera ar-camera-fix></a-entity>
+      <a-entity camera></a-entity>
     </a-scene>
 
   </body>
