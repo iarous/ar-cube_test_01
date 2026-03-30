@@ -3,32 +3,49 @@
   <head>
     <title>AR Cube</title>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-    <!-- Aktuellste A-Frame Version (1.7.1) -->
-    <script src="https://aframe.io/releases/1.7.1/aframe.min.js"></script>
-    
-    <!-- AR.js (3.4.5 bleibt die aktuellste stabile Version für A-Frame) -->
+    <!-- Stabile Bibliotheken -->
+    <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.5/aframe/build/aframe-ar.js"></script>
-    
-    <!-- Aktuellste aframe-extras Version (7.5.0) -->
     <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.5.0/dist/aframe-extras.min.js"></script>
 
     <style>
       *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-      body {
+      body, html {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
         overflow: hidden;
-        background: #000;
+        background-color: #000;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       }
 
-      a-scene {
-        position: fixed;
-        top: 0; left: 0;
-        width: 100%; height: 100%;
+      /* ─── DER KAMERA ZOOM-FIX ─── */
+      /* AR.js erstellt ein <video> Tag und skaliert es oft falsch. 
+         Das hier zwingt das Video, genau in den Bildschirm zu passen, 
+         ohne Ränder abzuschneiden (Zoom-Effekt). */
+      #arjs-video {
+        width: 100vw !important;
+        height: 100vh !important;
+        object-fit: cover !important;
+        margin-left: 0 !important;
+        margin-top: 0 !important;
+        left: 0 !important;
+        top: 0 !important;
       }
 
+      /* Verhindert, dass der Canvas verschoben wird */
+      .a-canvas {
+        width: 100vw !important;
+        height: 100vh !important;
+        left: 0 !important;
+        top: 0 !important;
+      }
+
+      /* ─── Model-Switcher UI ─── */
       #model-selector {
         position: fixed;
         bottom: 28px;
@@ -147,49 +164,39 @@
       <button class="model-btn" id="btn-03" onclick="switchModel('./model_03.glb', 'btn-03')">Modell 3</button>
     </div>
 
-    <!-- Anpassungen für A-Frame 1.7.x: colorManagement ist Standard -->
+    <!-- arjs Konfiguration auf absolute Standardwerte gesetzt -->
     <a-scene
       embedded
-      arjs="sourceType: webcam;
-            debugUIEnabled: false;
-            detectionMode: mono_and_matrix;
-            matrixCodeType: 3x3;"
+      arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;"
       cube-mode
       vr-mode-ui="enabled: false"
-      renderer="logarithmicDepthBuffer: true;"
+      renderer="logarithmicDepthBuffer: true; antialias: true;"
       loading-screen="enabled: false">
-      
-      <!-- Marker 0 · Vorderseite -->
+
       <a-marker class="cubemarker" type="barcode" value="0" smooth="true" smoothCount="10" smoothTolerance="0.01" smoothThreshold="5">
         <a-entity class="cube-entity" gltf-model="./model_01.glb" scale="1 1 1" position="0 -0.8 0" rotation="0 0 0" animation-mixer flat-material></a-entity>
       </a-marker>
 
-      <!-- Marker 1 · Rechte Seite -->
       <a-marker class="cubemarker" type="barcode" value="1" smooth="true" smoothCount="10" smoothTolerance="0.01" smoothThreshold="5">
         <a-entity class="cube-entity" gltf-model="./model_01.glb" scale="1 1 1" position="0 -0.8 0" rotation="0 -90 90" animation-mixer flat-material></a-entity>
       </a-marker>
 
-      <!-- Marker 2 · Rückseite -->
       <a-marker class="cubemarker" type="barcode" value="2" smooth="true" smoothCount="10" smoothTolerance="0.01" smoothThreshold="5">
         <a-entity class="cube-entity" gltf-model="./model_01.glb" scale="1 1 1" position="0 -0.8 0" rotation="0 0 180" animation-mixer flat-material></a-entity>
       </a-marker>
 
-      <!-- Marker 3 · Linke Seite -->
       <a-marker class="cubemarker" type="barcode" value="3" smooth="true" smoothCount="10" smoothTolerance="0.01" smoothThreshold="5">
         <a-entity class="cube-entity" gltf-model="./model_01.glb" scale="1 1 1" position="0 -0.8 0" rotation="0 0 -90" animation-mixer flat-material></a-entity>
       </a-marker>
 
-      <!-- Marker 4 · Oberseite -->
       <a-marker class="cubemarker" type="barcode" value="4" smooth="true" smoothCount="10" smoothTolerance="0.01" smoothThreshold="5">
         <a-entity class="cube-entity" gltf-model="./model_01.glb" scale="1 1 1" position="0 -0.8 0" rotation="90 0 0" animation-mixer flat-material></a-entity>
       </a-marker>
 
-      <!-- Marker 5 · Unterseite -->
       <a-marker class="cubemarker" type="barcode" value="5" smooth="true" smoothCount="10" smoothTolerance="0.01" smoothThreshold="5">
         <a-entity class="cube-entity" gltf-model="./model_01.glb" scale="1 1 1" position="0 -0.8 0" rotation="-90 0 0" animation-mixer flat-material></a-entity>
       </a-marker>
 
-      <!-- Kamera mit dem Fix-Component -->
       <a-entity camera></a-entity>
     </a-scene>
 
